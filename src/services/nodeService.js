@@ -3,8 +3,18 @@ import api from './api';
 export const nodeService = {
   getNodeDetails: async (graphId, nodeId) => {
     try {
-      const response = await api.get(`/node/${graphId}/${nodeId}`);
-      return response.data;
+      const response = await api.get(`/node/${graphId}/${nodeId}?connections=true`);
+      const data = response.data;
+      
+      return {
+        id: data.node.id,
+        title: data.node.title,
+        description: data.node.description,
+        layer: data.node.layer,
+        relevance: data.node.relevance,
+        children: data.node.children || [],
+        path: data.path || []
+      };
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -12,26 +22,35 @@ export const nodeService = {
 
   getRelatedNodes: async (graphId, nodeId) => {
     try {
-      const response = await api.get(`/node/${graphId}/${nodeId}/related`);
-      return response.data;
+      const response = await api.get(`/node/${graphId}/${nodeId}?connections=true`);
+      const data = response.data;
+      
+      const relatedNodes = (data.node.children || []).map(child => ({
+        id: child.id,
+        name: child.title,
+        description: child.description, 
+        layer: child.layer,
+        relevance: child.relevance,
+        graphId: graphId,
+        connectionStrength: child.relevance || 5
+      }));
+      
+      return relatedNodes;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
   getSourceCitations: async (graphId, nodeId) => {
-    try {
-      const response = await api.get(`/node/${graphId}/${nodeId}/citations`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
+    return [];
   },
 
   getExamples: async (graphId, nodeId) => {
     try {
-      const response = await api.get(`/node/${graphId}/${nodeId}/examples`);
-      return response.data;
+      const response = await api.get(`/node/${graphId}/${nodeId}?connections=true`);
+      const data = response.data;
+      
+      return data.examples || [];
     } catch (error) {
       throw error.response?.data || error.message;
     }

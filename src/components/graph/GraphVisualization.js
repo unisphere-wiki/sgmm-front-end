@@ -14,7 +14,9 @@ import { setSelectedNode } from '../../store/slices/nodeSlice';
 const GraphVisualization = () => {
   const dispatch = useDispatch();
   const graphRef = useRef();
+  const containerRef = useRef(null);
   const [draggedNode, setDraggedNode] = useState(null);
+  const [dimensions, setDimensions] = useState({ width: 500, height: 500 });
   const {
     nodes,
     links,
@@ -53,7 +55,7 @@ const GraphVisualization = () => {
         // Create a fresh object to avoid extensibility issues
         return Object.create(Object.prototype, {
           id: { value: String(node.id), writable: true, enumerable: true, configurable: true },
-          name: { value: String(node.name), writable: true, enumerable: true, configurable: true },
+          name: { value: String(node.name || node.title), writable: true, enumerable: true, configurable: true },
           description: { value: node.description, writable: true, enumerable: true, configurable: true },
           layer: { value: node.layer, writable: true, enumerable: true, configurable: true },
           relevance: { value: node.relevance, writable: true, enumerable: true, configurable: true },
@@ -94,68 +96,35 @@ const GraphVisualization = () => {
     };
   }, [nodes, links, currentLayer, showConnections]);
 
-  // Handle node click
-  const handleNodeClick = (node) => {
-    if (!node) return;
-    
-    console.log('Node clicked:', node);
-    // Clone the node to ensure it's extensible
-    const nodeData = {
-      id: node.id,
-      name: node.name,
-      description: node.description,
-      layer: node.layer,
-      relevance: node.relevance,
-      graphId: node.graphId,
-      color: node.color
+  // Update dimensions based on container size
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ 
+          width: width || 500, 
+          height: height || 500 
+        });
+      }
     };
-    
-    dispatch(setSelectedNodes([nodeData]));
-    dispatch(setSelectedNode(nodeData));
-  };
 
-  // Handle node drag start
-  const handleNodeDragStart = (node) => {
-    if (!node) return;
-    // Store a reference to the dragged node
-    setDraggedNode({
-      id: node.id,
-      startX: node.x,
-      startY: node.y
-    });
-  };
+    // Initial update
+    updateDimensions();
 
-  // Handle node drag end
-  const handleNodeDragEnd = (node) => {
-    if (!node || !draggedNode || draggedNode.id !== node.id) return;
-    
-    const updatedNodes = nodes.map(n => 
-      n.id === node.id ? { ...n, x: node.x, y: node.y } : n
-    );
-    
-    dispatch(setGraphData({ nodes: updatedNodes, links }));
-    setDraggedNode(null);
-  };
+    // Set up ResizeObserver
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    resizeObserver.observe(containerRef.current);
 
-  // Handle zoom
-  const handleZoom = (zoom) => {
-    dispatch(setZoom(zoom));
-  };
+    // Also listen for window resize as a fallback
+    window.addEventListener('resize', updateDimensions);
 
-  // Handle center change
-  const handleCenterChange = (center) => {
-    dispatch(setCenter(center));
-  };
-
-  // Layer controls
-  const handleLayerChange = (layer) => {
-    dispatch(setCurrentLayer(layer));
-  };
-
-  // Connection toggle
-  const handleToggleConnections = () => {
-    dispatch(toggleConnections());
-  };
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
 
   // Create animation state for pulsing effect
   const [pulseScale, setPulseScale] = useState(1);
@@ -190,20 +159,97 @@ const GraphVisualization = () => {
     };
   }, [selectedNodes]);
 
-  // Set initial zoom when component mounts
+  // Handle node click
+  const handleNodeClick = (node) => {
+    if (!node) return;
+    
+    console.log('Node clicked:', node);
+    // Clone the node to ensure it's extensible
+    const nodeData = {
+      id: node.id,
+      name: node.name,
+      description: node.description,
+      layer: node.layer,
+      relevance: node.relevance,
+      graphId: node.graphId,
+      color: node.color
+    };
+    
+    dispatch(setSelectedNodes([nodeData]));
+    dispatch(setSelectedNode(nodeData));
+  };
+
+  // Handle node drag start
+  const handleNodeDragStart = (node) => {
+    if (!node) return;
+    // Store a reference to the dragged node
+    setDraggedNode({
+      id: node.id,
+      startX: node.x,
+      startY: node.y
+    });
+  };
+
+  // Handle node hover
+  const handleNodeHover = (node) => {
+    document.body.style.cursor = node ? 'pointer' : 'default';
+  };
+
+  // Handle node drag end
+  const handleNodeDragEnd = (node) => {
+    if (!node || !draggedNode || draggedNode.id !== node.id) return;
+    
+    const updatedNodes = nodes.map(n => 
+      n.id === node.id ? { ...n, x: node.x, y: node.y } : n
+    );
+    
+    dispatch(setGraphData({ nodes: updatedNodes, links }));
+    setDraggedNode(null);
+  };
+
+  // Handle zoom
+  const handleZoom = (zoom) => {
+    dispatch(setZoom(zoom));
+  };
+
+  // Handle center change
+  const handleCenterChange = (center) => {
+    dispatch(setCenter(center));
+  };
+
+  // Layer controls
+  const handleLayerChange = (layer) => {
+    dispatch(setCurrentLayer(layer));
+  };
+
+  // Connection toggle
+  const handleToggleConnections = () => {
+    dispatch(toggleConnections());
+  };
+
+  // Set up the graph when component mounts
   useEffect(() => {
     if (graphRef.current) {
+      // Initial zoom
       graphRef.current.zoom(1.5); // Set a closer initial zoom
       graphRef.current.centerAt(0, 0);
     }
   }, []);
 
   return (
-    <div className="relative bg-white h-[calc(100vh-200px)] sm:h-[calc(100vh-240px)] md:h-[calc(100vh-200px)]">
+    <div 
+      ref={containerRef} 
+      className="relative w-full h-full flex-grow"
+      style={{ minHeight: '400px' }}
+    >
       {/* Layer Controls */}
       <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 bg-white p-1 sm:p-2 rounded shadow-sm">
         <div className="flex flex-wrap gap-1 sm:gap-2">
-          {[0, 1, 2, 3].map((layer) => {
+          {/* Only show layer buttons for layers that have nodes */}
+          {[0, 1, 2, 3].filter(layer => 
+            // Check if there are any nodes for this layer
+            nodes.some(node => node.layer === layer)
+          ).map((layer) => {
             // Generate dynamic ring color classes based on layer
             const ringColorClasses = {
               0: 'ring-indigo-600',
@@ -248,104 +294,117 @@ const GraphVisualization = () => {
       </div>
 
       {/* Graph Visualization */}
-      <ForceGraph2D
-        ref={graphRef}
-        graphData={graphData}
-        nodeLabel="name"
-        nodeRelSize={8}
-        linkWidth={1}
-        linkColor="#CBD5E0"
-        linkOpacity={0.6}
-        linkDirectionalParticles={1}
-        linkDirectionalParticleSpeed={0.002}
-        linkDirectionalParticleWidth={2}
-        linkDirectionalParticleColor="#CBD5E0"
-        onNodeClick={handleNodeClick}
-        onNodeDragStart={handleNodeDragStart}
-        onNodeDrag={node => { /* No-op to avoid extensibility error */ }}
-        onNodeDragEnd={handleNodeDragEnd}
-        onZoom={handleZoom}
-        onCenterChange={handleCenterChange}
-        nodeCanvasObject={(node, ctx, globalScale) => {
-          const label = node.name;
-          const fontSize = 12/globalScale;
-          ctx.font = `${fontSize}px Sans-Serif`;
-          
-          // Check if this node is the selected node
-          const isSelected = selectedNodes && 
-            selectedNodes.length > 0 && 
-            selectedNodes[0].id === node.id;
-          
-          // Calculate node size - make selected node bigger
-          const baseSize = 5;
-          const nodeSize = isSelected ? baseSize * 1.5 : baseSize;
-          
-          // Draw node glow effect for selected node
-          if (isSelected) {
-            // Outer glow with pulsing effect
-            const glowSize = nodeSize + 3 * pulseScale;
-            
-            // Draw outer glow circle
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, glowSize, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(255, 255, 204, 0.6)'; // Light yellow glow
-            ctx.fill();
-            
-            // Draw mid glow circle
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.fill();
-            
-            // Draw border
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-          
-          // Draw main node circle
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
-          ctx.fillStyle = node.color || layerColors[node.layer] || '#4F46E5';
-          ctx.fill();
-          
-          // Add text label - position it slightly lower for selected nodes
-          const labelYOffset = isSelected ? nodeSize + 8 : nodeSize + 5;
-          ctx.fillStyle = '#000000';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, node.x, node.y + labelYOffset);
-        }}
-        backgroundColor="#ffffff"
-        width={window.innerWidth * 0.5}
-        height={window.innerHeight - 200}
-        cooldownTicks={50}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
-        enableNodeDrag={true}
-        enableZoomInteraction={true}
-        enablePanInteraction={true}
-        onEngineStop={() => {
-          // Ensure nodes have positions after force simulation
-          if (graphRef.current) {
-            const nodes = graphData.nodes;
-            nodes.forEach(node => {
-              if (!node.x) node.x = 0;
-              if (!node.y) node.y = 0;
-            });
-          }
-        }}
-        d3Force={(d3) => ({
-          center: d3.forceCenter(),
-          charge: d3.forceManyBody().strength(-100),
-          collide: d3.forceCollide(30),
-          link: d3.forceLink().id(d => d.id).distance(100),
-          x: d3.forceX(0).strength(0.01),
-          y: d3.forceY(0).strength(0.01)
-        })}
-      />
+      <div className="flex-grow relative flex items-center justify-center h-full">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+            <div className="text-indigo-600 text-lg font-medium">Loading graph...</div>
+          </div>
+        ) : graphData.nodes.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-gray-500">No graph data available</div>
+          </div>
+        ) : (
+          <ForceGraph2D
+            ref={graphRef}
+            graphData={graphData}
+            nodeLabel="name"
+            nodeRelSize={8}
+            linkWidth={1}
+            linkColor="#CBD5E0"
+            linkOpacity={0.6}
+            linkDirectionalParticles={1}
+            linkDirectionalParticleSpeed={0.002}
+            linkDirectionalParticleWidth={2}
+            linkDirectionalParticleColor="#CBD5E0"
+            onNodeClick={handleNodeClick}
+            onNodeDragStart={handleNodeDragStart}
+            onNodeDrag={node => { /* No-op to avoid extensibility error */ }}
+            onNodeDragEnd={handleNodeDragEnd}
+            onZoom={handleZoom}
+            onCenterChange={handleCenterChange}
+            onNodeHover={handleNodeHover}
+            nodeCanvasObject={(node, ctx, globalScale) => {
+              const label = node.name;
+              const fontSize = 12/globalScale;
+              ctx.font = `${fontSize}px Sans-Serif`;
+              
+              // Check if this node is the selected node
+              const isSelected = selectedNodes && 
+                selectedNodes.length > 0 && 
+                selectedNodes[0].id === node.id;
+              
+              // Calculate node size - make selected node bigger
+              const baseSize = 5;
+              const nodeSize = isSelected ? baseSize * 1.5 : baseSize;
+              
+              // Draw node glow effect for selected node
+              if (isSelected) {
+                // Outer glow with pulsing effect
+                const glowSize = nodeSize + 3 * pulseScale;
+                
+                // Draw outer glow circle
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, glowSize, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(255, 255, 204, 0.6)'; // Light yellow glow
+                ctx.fill();
+                
+                // Draw mid glow circle
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fill();
+                
+                // Draw border
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+              }
+              
+              // Draw main node circle
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
+              ctx.fillStyle = node.color || layerColors[node.layer] || '#4F46E5';
+              ctx.fill();
+              
+              // Add text label - position it slightly lower for selected nodes
+              const labelYOffset = isSelected ? nodeSize + 8 : nodeSize + 5;
+              ctx.fillStyle = '#000000';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, node.x, node.y + labelYOffset);
+            }}
+            backgroundColor="#ffffff"
+            width={dimensions.width}
+            height={dimensions.height}
+            cooldownTicks={50}
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.3}
+            enableNodeDrag={true}
+            enableZoomInteraction={true}
+            enablePanInteraction={true}
+            onEngineStop={() => {
+              // Ensure nodes have positions after force simulation
+              if (graphRef.current) {
+                const nodes = graphData.nodes;
+                nodes.forEach(node => {
+                  if (!node.x) node.x = 0;
+                  if (!node.y) node.y = 0;
+                });
+              }
+            }}
+            d3Force={(d3) => ({
+              center: d3.forceCenter(),
+              charge: d3.forceManyBody().strength(-100),
+              collide: d3.forceCollide(30),
+              link: d3.forceLink().id(d => d.id).distance(100),
+              x: d3.forceX(0).strength(0.01),
+              y: d3.forceY(0).strength(0.01)
+            })}
+          />
+        )}
+      </div>
 
       {/* Zoom Controls */}
       <div className="absolute bottom-4 right-4 z-10 bg-white p-2 rounded shadow-sm flex space-x-1">
@@ -377,13 +436,6 @@ const GraphVisualization = () => {
           Reset
         </button>
       </div>
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-          <div className="text-indigo-600 text-lg font-medium">Loading graph...</div>
-        </div>
-      )}
     </div>
   );
 };
