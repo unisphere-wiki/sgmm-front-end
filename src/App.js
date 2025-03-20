@@ -6,6 +6,7 @@ import MainLayout from './components/layout/MainLayout';
 import QueryPanel from './components/query/QueryPanel';
 import GraphVisualization from './components/graph/GraphVisualization';
 import NodeDetailsPanel from './components/node/NodeDetailsPanel';
+import NodeChat from './components/chat/NodeChat';
 import { useSelector } from 'react-redux';
 
 // Wrapper component to access Redux state
@@ -40,13 +41,11 @@ const AppContent = () => {
           <div className="flex-grow">
             <NodeDetailsPanel />
           </div>
-          {isChatOpen && (
-            <div className="mt-4">
-              {/* Chat functionality will be implemented later */}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Node Chat (rendered outside the main layout for proper overlay) */}
+      <NodeChat />
     </MainLayout>
   );
 };
