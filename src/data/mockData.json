@@ -1,116 +1,272 @@
 {
   "nodes": [
     {
-      "id": "1",
-      "name": "Machine Learning",
-      "description": "A field of study that gives computers the ability to learn without being explicitly programmed.",
-      "relevance": 9,
-      "graphId": "graph1",
-      "type": "concept"
-    },
-    {
-      "id": "2",
-      "name": "Neural Networks",
-      "description": "Computing systems inspired by biological neural networks in human brains.",
-      "relevance": 8,
-      "graphId": "graph1",
-      "type": "concept"
-    },
-    {
-      "id": "3",
-      "name": "Deep Learning",
-      "description": "A subset of machine learning based on artificial neural networks with multiple layers.",
-      "relevance": 9,
-      "graphId": "graph1",
-      "type": "concept"
-    },
-    {
-      "id": "4",
-      "name": "Supervised Learning",
-      "description": "A type of machine learning where the model is trained on labeled data.",
-      "relevance": 7,
-      "graphId": "graph1",
-      "type": "concept"
+      "id": "root",
+      "title": "Root Node",
+      "description": "This is the root node of the graph",
+      "layer": 0,
+      "relevance": 1,
+      "children": [
+        {
+          "id": "node1",
+          "title": "Machine Learning Basics",
+          "description": "Introduction to machine learning concepts",
+          "layer": 1,
+          "relevance": 0.9,
+          "children": [
+            {
+              "id": "node1-1",
+              "title": "Supervised Learning",
+              "description": "Learning from labeled data",
+              "layer": 2,
+              "relevance": 0.8,
+              "children": []
+            },
+            {
+              "id": "node1-2",
+              "title": "Unsupervised Learning",
+              "description": "Learning from unlabeled data",
+              "layer": 2,
+              "relevance": 0.8,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "node2",
+          "title": "Data Structures",
+          "description": "Common data structures in programming",
+          "layer": 1,
+          "relevance": 0.85,
+          "children": [
+            {
+              "id": "node2-1",
+              "title": "Arrays",
+              "description": "Fixed-size sequential collection",
+              "layer": 2,
+              "relevance": 0.75,
+              "children": []
+            },
+            {
+              "id": "node2-2",
+              "title": "Linked Lists",
+              "description": "Dynamic data structure",
+              "layer": 2,
+              "relevance": 0.75,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "node3",
+          "title": "Web Development",
+          "description": "Modern web development practices",
+          "layer": 1,
+          "relevance": 0.95,
+          "children": [
+            {
+              "id": "node3-1",
+              "title": "Frontend",
+              "description": "Client-side development",
+              "layer": 2,
+              "relevance": 0.85,
+              "children": [
+                {
+                  "id": "node3-1-1",
+                  "title": "React",
+                  "description": "UI library for building interfaces",
+                  "layer": 3,
+                  "relevance": 0.9,
+                  "children": []
+                },
+                {
+                  "id": "node3-1-2",
+                  "title": "Vue",
+                  "description": "Progressive JavaScript framework",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "node3-2",
+              "title": "Backend",
+              "description": "Server-side development",
+              "layer": 2,
+              "relevance": 0.85,
+              "children": [
+                {
+                  "id": "node3-2-1",
+                  "title": "Node.js",
+                  "description": "JavaScript runtime environment",
+                  "layer": 3,
+                  "relevance": 0.9,
+                  "children": []
+                },
+                {
+                  "id": "node3-2-2",
+                  "title": "Python",
+                  "description": "General-purpose programming language",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "node4",
+          "title": "Database Systems",
+          "description": "Database management and design",
+          "layer": 1,
+          "relevance": 0.88,
+          "children": [
+            {
+              "id": "node4-1",
+              "title": "SQL Databases",
+              "description": "Relational database systems",
+              "layer": 2,
+              "relevance": 0.8,
+              "children": [
+                {
+                  "id": "node4-1-1",
+                  "title": "MySQL",
+                  "description": "Popular open-source database",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                },
+                {
+                  "id": "node4-1-2",
+                  "title": "PostgreSQL",
+                  "description": "Advanced open-source database",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "node4-2",
+              "title": "NoSQL Databases",
+              "description": "Non-relational database systems",
+              "layer": 2,
+              "relevance": 0.8,
+              "children": [
+                {
+                  "id": "node4-2-1",
+                  "title": "MongoDB",
+                  "description": "Document-based database",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                },
+                {
+                  "id": "node4-2-2",
+                  "title": "Redis",
+                  "description": "In-memory data store",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "node5",
+          "title": "DevOps",
+          "description": "Development and operations practices",
+          "layer": 1,
+          "relevance": 0.92,
+          "children": [
+            {
+              "id": "node5-1",
+              "title": "Containerization",
+              "description": "Container-based virtualization",
+              "layer": 2,
+              "relevance": 0.85,
+              "children": [
+                {
+                  "id": "node5-1-1",
+                  "title": "Docker",
+                  "description": "Container platform",
+                  "layer": 3,
+                  "relevance": 0.9,
+                  "children": []
+                },
+                {
+                  "id": "node5-1-2",
+                  "title": "Kubernetes",
+                  "description": "Container orchestration",
+                  "layer": 3,
+                  "relevance": 0.9,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "node5-2",
+              "title": "CI/CD",
+              "description": "Continuous integration and deployment",
+              "layer": 2,
+              "relevance": 0.85,
+              "children": [
+                {
+                  "id": "node5-2-1",
+                  "title": "Jenkins",
+                  "description": "Automation server",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                },
+                {
+                  "id": "node5-2-2",
+                  "title": "GitHub Actions",
+                  "description": "CI/CD platform",
+                  "layer": 3,
+                  "relevance": 0.85,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
-  "edges": [
+  "suggestedQuestions": [
+    "What is machine learning?",
+    "How do databases work?",
+    "What is web development?",
+    "Explain DevOps practices"
+  ],
+  "sourceCitations": [
     {
-      "source": "1",
-      "target": "2",
-      "type": "related_to",
-      "strength": 0.8
+      "id": "source1",
+      "title": "Introduction to Machine Learning",
+      "author": "John Doe",
+      "year": 2023
     },
     {
-      "source": "2",
-      "target": "3",
-      "type": "related_to",
-      "strength": 0.9
-    },
-    {
-      "source": "1",
-      "target": "4",
-      "type": "related_to",
-      "strength": 0.7
+      "id": "source2",
+      "title": "Web Development Best Practices",
+      "author": "Jane Smith",
+      "year": 2023
     }
   ],
-  "suggestedQuestions": {
-    "1": [
-      "What is the difference between machine learning and traditional programming?",
-      "What are the main types of machine learning?",
-      "How does machine learning work?"
-    ],
-    "2": [
-      "What are the basic components of a neural network?",
-      "How do neural networks learn?",
-      "What are the different types of neural networks?"
-    ],
-    "3": [
-      "What makes deep learning different from traditional neural networks?",
-      "What are the applications of deep learning?",
-      "What are the challenges in deep learning?"
-    ],
-    "4": [
-      "What are the advantages of supervised learning?",
-      "What types of problems can supervised learning solve?",
-      "How do you evaluate a supervised learning model?"
-    ]
-  },
-  "sourceCitations": {
-    "1": [
-      {
-        "text": "Machine learning is the study of computer algorithms that can improve automatically through experience.",
-        "source": "Mitchell, T. (1997). Machine Learning"
-      }
-    ],
-    "2": [
-      {
-        "text": "Neural networks are computing systems inspired by the biological neural networks that constitute animal brains.",
-        "source": "Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning"
-      }
-    ]
-  },
-  "examples": {
-    "1": [
-      {
-        "title": "Email Spam Detection",
-        "description": "Using machine learning to classify emails as spam or not spam.",
-        "learnings": [
-          "Feature extraction from text",
-          "Classification algorithms",
-          "Model evaluation metrics"
-        ]
-      }
-    ],
-    "2": [
-      {
-        "title": "Image Recognition with Neural Networks",
-        "description": "Building a neural network to recognize handwritten digits.",
-        "learnings": [
-          "Neural network architecture",
-          "Training process",
-          "Hyperparameter tuning"
-        ]
-      }
-    ]
-  }
+  "examples": [
+    {
+      "id": "example1",
+      "title": "Simple React Component",
+      "code": "function App() { return <div>Hello World</div>; }"
+    },
+    {
+      "id": "example2",
+      "title": "Basic SQL Query",
+      "code": "SELECT * FROM users WHERE age > 18;"
+    }
+  ]
 } 

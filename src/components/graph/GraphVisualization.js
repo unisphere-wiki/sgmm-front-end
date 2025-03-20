@@ -29,39 +29,32 @@ const GraphVisualization = () => {
   const graphData = useMemo(() => {
     console.log('Creating graph data with:', { nodes, links, currentLayer, showConnections });
     
+    if (!nodes || !links) {
+      return { nodes: [], links: [] };
+    }
+
     // Create new node objects to ensure they're mutable
     const filteredNodes = nodes
-      .filter((node) => node.layer === currentLayer)
+      .filter((node) => node.layer <= currentLayer) // Show nodes up to current layer
       .map(node => {
         console.log('Processing node for graph:', node);
-        // Create a new object with all necessary properties
-        const newNode = Object.assign({}, {
+        // Create a new object with only essential properties
+        const x = node.x || Math.random() * 800 - 400;
+        const y = node.y || Math.random() * 800 - 400;
+        
+        return {
+          ...node,
+          // Ensure basic properties are properly typed
           id: String(node.id),
           name: String(node.name),
-          description: String(node.description),
-          relevance: Number(node.relevance),
-          graphId: String(node.graphId),
-          type: String(node.type),
-          layer: Number(node.layer),
-          group: String(node.type),
           val: Number(node.relevance),
-          color: node.color || '#4F46E5',
-          x: node.x || Math.random() * 1000 - 500,
-          y: node.y || Math.random() * 1000 - 500,
-          // Add drag-related properties
-          vx: 0,
-          vy: 0,
+          x,
+          y,
+          // Initialize position properties needed by force-graph
           fx: null,
           fy: null,
-          // Add force-graph specific properties
-          __initialDragPos: { x: node.x || 0, y: node.y || 0 },
-          __dragged: false,
-          __initPos: { x: node.x || 0, y: node.y || 0 },
-          __dragPos: { x: node.x || 0, y: node.y || 0 },
-          __dragStartPos: { x: node.x || 0, y: node.y || 0 },
-          __dragEndPos: { x: node.x || 0, y: node.y || 0 }
-        });
-        return newNode;
+          initPos: { x, y }
+        };
       });
 
     console.log('Filtered nodes:', filteredNodes);
@@ -78,8 +71,8 @@ const GraphVisualization = () => {
             return currentLayerNodeIds.has(sourceId) && currentLayerNodeIds.has(targetId);
           })
           .map(link => ({
-            source: filteredNodes.find(n => n.id === (typeof link.source === 'string' ? link.source : link.source.id)) || link.source,
-            target: filteredNodes.find(n => n.id === (typeof link.target === 'string' ? link.target : link.target.id)) || link.target,
+            source: link.source,
+            target: link.target,
             value: Number(link.value),
             color: link.color || '#CBD5E0'
           }))
@@ -96,21 +89,7 @@ const GraphVisualization = () => {
   // Handle node click
   const handleNodeClick = (node) => {
     console.log('Node clicked:', node);
-    console.log('Node properties:', {
-      id: node.id,
-      name: node.name,
-      description: node.description,
-      relevance: node.relevance,
-      graphId: node.graphId,
-      type: node.type,
-      layer: node.layer,
-      group: node.group,
-      val: node.val,
-      color: node.color,
-      x: node.x,
-      y: node.y
-    });
-    // Select the node in both graph and node slices
+    // Pass the original node data to maintain all properties
     dispatch(setSelectedNodes([node]));
     dispatch(setSelectedNode(node));
   };
@@ -118,14 +97,12 @@ const GraphVisualization = () => {
   // Handle node drag end
   const handleNodeDragEnd = (node, translate) => {
     if (node) {
-      // Update node position in the graph
       const updatedNode = {
         ...node,
         x: translate.x,
         y: translate.y
       };
       
-      // Update the node in the store
       const updatedNodes = nodes.map(n => 
         n.id === node.id ? { ...n, ...updatedNode } : n
       );
@@ -153,12 +130,20 @@ const GraphVisualization = () => {
     dispatch(toggleConnections());
   };
 
+  // Set initial zoom when component mounts
+  useEffect(() => {
+    if (graphRef.current) {
+      graphRef.current.zoom(1.5); // Set a closer initial zoom
+      graphRef.current.centerAt(0, 0);
+    }
+  }, []);
+
   return (
     <div className="relative bg-white lg h-[calc(100vh-200px)]">
       {/* Layer Controls */}
       <div className="absolute top-4 left-4 z-10 bg-white p-2">
         <div className="flex space-x-2">
-          {[0, 1, 2].map((layer) => (
+          {[0, 1, 2, 3].map((layer) => (
             <button
               key={layer}
               onClick={() => handleLayerChange(layer)}
@@ -228,19 +213,30 @@ const GraphVisualization = () => {
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
         enableNodeDrag={true}
-        enableNodeSelection={true}
-        enablePanInteraction={true}
         enableZoomInteraction={true}
-        d3Force={{
-          charge: -100,
-          link: { distance: 100 },
-          center: { x: 0, y: 0 },
-          collision: { radius: 30 }
+        enablePanInteraction={true}
+        onEngineStop={() => {
+          // Ensure nodes have positions after force simulation
+          if (graphRef.current) {
+            const nodes = graphData.nodes;
+            nodes.forEach(node => {
+              if (!node.x) node.x = 0;
+              if (!node.y) node.y = 0;
+            });
+          }
         }}
+        d3Force={(d3) => ({
+          center: d3.forceCenter(),
+          charge: d3.forceManyBody().strength(-100),
+          collide: d3.forceCollide(30),
+          link: d3.forceLink().id(d => d.id).distance(100),
+          x: d3.forceX(0).strength(0.01),
+          y: d3.forceY(0).strength(0.01)
+        })}
       />
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-4 right-4 z-10 bg-white rounded-md shadow-sm p-2">
+      <div className="absolute bottom-4 right-4 z-10 bg-white p-2 rounded-md shadow-md">
         <div className="flex space-x-2">
           <button
             onClick={() => {
@@ -262,7 +258,7 @@ const GraphVisualization = () => {
           </button>
           <button
             onClick={() => {
-              graphRef.current?.zoom(1);
+              graphRef.current?.zoom(1.5); // Reset to closer zoom
               graphRef.current?.centerAt(0, 0);
             }}
             className="p-2 rounded-md text-gray-700 hover:bg-gray-100"

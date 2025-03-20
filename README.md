@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# SGMM Front-End Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a React-based front-end application for the St. Gallen Management Model (SGMM) visualization tool. The application provides an interactive interface for querying and visualizing management model concepts through a graph-based representation.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Interactive graph visualization of management concepts
+- Query interface with context-aware parameters
+- Multi-layer concept exploration
+- Node details panel with comprehensive information
+- Interactive chat functionality for concept exploration
+- Query history tracking
+- Responsive and modern UI
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Before running this application, make sure you have the following installed:
+- Node.js (v14.0.0 or higher)
+- npm (v6.0.0 or higher)
+- Git
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/sgmm-front-end.git
+cd sgmm-front-end/front-end
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### `npm run build`
+## Running the Application
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Start the development server:
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Open your browser and navigate to:
+```
+http://localhost:3000
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Usage Guide
 
-### `npm run eject`
+### Query Panel
+- Enter your query in the text area
+- Configure context parameters:
+  - Company Size (small/medium/large)
+  - Industry (technology/healthcare/finance/manufacturing)
+  - Management Role (executive/manager/consultant)
+- Submit your query to generate the graph visualization
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Graph Visualization
+- Use the layer controls (0-3) to explore different concept levels
+- Toggle connections to show/hide relationships
+- Click nodes to view detailed information
+- Drag nodes to rearrange the graph
+- Use mouse wheel to zoom in/out
+- Click and drag the background to pan
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Node Details Panel
+- View detailed information about selected nodes
+- Access different tabs:
+  - Details: Node description and relevance
+  - Connections: Related concepts
+  - Citations: Source references
+  - Examples: Practical examples
+- Use the chat feature to ask questions about specific concepts
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Query History
+- Access previous queries from the history panel
+- Click on historical queries to reload them
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+```
+sgmm-front-end/
+├── src/
+│   ├── components/
+│   │   ├── chat/
+│   │   ├── graph/
+│   │   ├── layout/
+│   │   ├── node/
+│   │   └── query/
+│   ├── services/
+│   ├── store/
+│   │   └── slices/
+│   └── data/
+├── public/
+└── package.json
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Development
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Key Technologies
+- React
+- Redux Toolkit for state management
+- React Force Graph for visualization
+- Tailwind CSS for styling
 
-### Code Splitting
+### State Management
+The application uses Redux with the following slices:
+- `querySlice`: Manages query state and history
+- `graphSlice`: Handles graph visualization state
+- `nodeSlice`: Manages selected node and details
+- `chatSlice`: Controls chat functionality
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Troubleshooting
 
-### Analyzing the Bundle Size
+### Common Issues
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Graph not displaying:
+   - Check browser console for errors
+   - Ensure all dependencies are installed
+   - Verify data format in mockData.json
 
-### Making a Progressive Web App
+2. Query form not responding:
+   - Clear browser cache
+   - Check Redux DevTools for state updates
+   - Verify form event handlers
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+3. Node details not loading:
+   - Check network requests
+   - Verify node selection in Redux state
+   - Ensure mockNodeService is properly configured
 
-### Advanced Configuration
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-### Deployment
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-### `npm run build` fails to minify
+## Support
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+For support, please open an issue in the GitHub repository or contact the development team.

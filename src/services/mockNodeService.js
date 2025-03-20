@@ -1,132 +1,134 @@
 import mockData from '../data/mockData.json';
 
+// Helper function to flatten the hierarchical structure
+const flattenNodes = (nodes, parentId = null) => {
+  return nodes.reduce((acc, node) => {
+    // Create a new object with only essential properties
+    const flatNode = {
+      id: String(node.id),
+      name: String(node.title),
+      description: String(node.description),
+      relevance: Number(node.relevance),
+      layer: Number(node.layer),
+      // Graph visualization properties
+      val: Number(node.relevance),
+      color: getNodeColor(node.layer),
+      // Initial position
+      x: Math.random() * 800 - 400,
+      y: Math.random() * 800 - 400
+    };
+    acc.nodes.push(flatNode);
+    
+    // Add links for children
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(child => {
+        // Create a simple link object
+        const link = {
+          source: String(node.id),
+          target: String(child.id),
+          value: 1,
+          color: '#CBD5E0'
+        };
+        acc.links.push(link);
+      });
+      // Recursively process children
+      const childResults = flattenNodes(node.children, node.id);
+      acc.nodes.push(...childResults.nodes);
+      acc.links.push(...childResults.links);
+    }
+    
+    return acc;
+  }, { nodes: [], links: [] });
+};
+
+// Helper function to get node color based on layer
+const getNodeColor = (layer) => {
+  const colors = {
+    0: '#4F46E5', // Root node
+    1: '#10B981', // First level
+    2: '#F59E0B', // Second level
+    3: '#EF4444', // Third level
+    4: '#8B5CF6'  // Fourth level
+  };
+  return colors[layer] || '#CBD5E0';
+};
+
 // Transform mock data into graph format
 const transformGraphData = (data) => {
   console.log('Raw mock data:', data);
-  
-  // Create new nodes array with fresh objects
-  const nodes = data.nodes.map(node => {
-    console.log('Processing node:', node);
-    // Create a new object with all necessary properties
-    const newNode = Object.assign({}, {
-      id: String(node.id),
-      name: String(node.name),
-      description: String(node.description),
-      relevance: Number(node.relevance),
-      graphId: String(node.graphId),
-      type: String(node.type),
-      layer: 0,
-      group: String(node.type),
-      val: Number(node.relevance),
-      color: '#4F46E5',
-      // Basic position properties
-      x: Math.random() * 1000 - 500,
-      y: Math.random() * 1000 - 500,
-      // Add drag-related properties
-      vx: 0,
-      vy: 0,
-      fx: null,
-      fy: null,
-      // Add force-graph specific properties
-      __initialDragPos: { x: 0, y: 0 },
-      __dragged: false,
-      __initPos: { x: 0, y: 0 },
-      __dragPos: { x: 0, y: 0 },
-      __dragStartPos: { x: 0, y: 0 },
-      __dragEndPos: { x: 0, y: 0 },
-      __dragStartTime: 0,
-      __dragEndTime: 0,
-      __dragStartEvent: null,
-      __dragEndEvent: null,
-      __dragStartZoom: 1,
-      __dragEndZoom: 1,
-      __dragStartCenter: { x: 0, y: 0 },
-      __dragEndCenter: { x: 0, y: 0 }
-    });
-    return newNode;
-  });
-
-  console.log('Transformed nodes:', nodes);
-
-  // Create new links array with fresh objects
-  const links = data.edges.map(edge => ({
-    source: String(edge.source),
-    target: String(edge.target),
-    value: Number(edge.strength),
-    color: '#CBD5E0'
-  }));
-
-  console.log('Transformed links:', links);
-
-  return { nodes, links };
+  const result = flattenNodes(data.nodes);
+  console.log('Transformed graph data:', result);
+  return result;
 };
 
+// Mock service implementation
 const mockNodeService = {
-  // Get all nodes
   getNodes: async () => {
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    return transformGraphData(mockData);
+    return transformGraphData(mockData); // Return both nodes and links
   },
 
-  // Get node details
   getNodeDetails: async (graphId, nodeId) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const node = mockData.nodes.find(n => n.id === nodeId);
+    const findNode = (nodes) => {
+      for (const node of nodes) {
+        if (node.id === nodeId) return node;
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const node = findNode(mockData.nodes);
     if (!node) throw new Error('Node not found');
     return node;
   },
 
-  // Get related nodes
   getRelatedNodes: async (graphId, nodeId) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const edges = mockData.edges.filter(e => e.source === nodeId);
-    return edges.map(edge => {
-      const targetNode = mockData.nodes.find(n => n.id === edge.target);
-      return {
-        ...targetNode,
-        connectionStrength: edge.strength
-      };
-    });
+    const findNode = (nodes) => {
+      for (const node of nodes) {
+        if (node.id === nodeId) return node;
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const node = findNode(mockData.nodes);
+    if (!node) throw new Error('Node not found');
+    
+    // Return parent and children as related nodes
+    const relatedNodes = [];
+    if (node.children) {
+      relatedNodes.push(...node.children);
+    }
+    return relatedNodes;
   },
 
-  // Get suggested questions
   getSuggestedQuestions: async (graphId, nodeId) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockData.suggestedQuestions[nodeId] || [];
+    return mockData.suggestedQuestions || [];
   },
 
-  // Get source citations
   getSourceCitations: async (graphId, nodeId) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockData.sourceCitations[nodeId] || [];
+    return mockData.sourceCitations || [];
   },
 
-  // Get examples
   getExamples: async (graphId, nodeId) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockData.examples[nodeId] || [];
+    return mockData.examples || [];
   },
 
-  // Send chat message
   sendChatMessage: async (graphId, nodeId, message, messageHistory) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
-    // Simple mock response based on the message content
-    const node = mockData.nodes.find(n => n.id === nodeId);
-    if (!node) throw new Error('Node not found');
-
-    // Generate a mock response based on the message content
-    let response = "I understand you're asking about " + node.name + ". ";
-    if (message.toLowerCase().includes('what is')) {
-      response += node.description;
-    } else if (message.toLowerCase().includes('how')) {
-      response += "This is a complex topic that requires careful consideration. Let me explain the key aspects...";
-    } else {
-      response += "That's an interesting question. Here's what I know about this topic...";
-    }
-
     return {
-      message: response,
+      message: `This is a mock response to: "${message}"`,
       timestamp: new Date().toISOString()
     };
   }

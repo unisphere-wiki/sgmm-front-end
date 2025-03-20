@@ -17,21 +17,29 @@ const QueryPanel = () => {
   );
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [localQuery, setLocalQuery] = useState(currentQuery);
+  const [localContextParams, setLocalContextParams] = useState(contextParams);
+
+  // Update local state when Redux state changes
+  React.useEffect(() => {
+    setLocalQuery(currentQuery);
+    setLocalContextParams(contextParams);
+  }, [currentQuery, contextParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!currentQuery.trim()) return;
+    if (!localQuery.trim()) return;
 
     dispatch(setLoading(true));
     try {
       const response = await queryService.submitQuery(
-        currentQuery,
-        contextParams,
+        localQuery,
+        localContextParams,
         selectedDocument?.id
       );
       
       dispatch(addToHistory({
-        query: currentQuery,
+        query: localQuery,
         timestamp: new Date().toISOString(),
         graphId: response.graphId,
       }));
@@ -45,6 +53,18 @@ const QueryPanel = () => {
     }
   };
 
+  const handleQueryChange = (e) => {
+    const newValue = e.target.value;
+    setLocalQuery(newValue); // Update local state immediately
+    dispatch(setQuery(newValue)); // Update Redux state
+  };
+
+  const handleContextParamChange = (param, value) => {
+    const updatedParams = { ...localContextParams, [param]: value };
+    setLocalContextParams(updatedParams); // Update local state immediately
+    dispatch(setContextParams(updatedParams)); // Update Redux state
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -56,11 +76,12 @@ const QueryPanel = () => {
           <div className="mt-1">
             <textarea
               id="query"
+              name="query"
               rows={3}
               className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
               placeholder="e.g., How can the St. Gallen Management Model help with organizational restructuring?"
-              value={currentQuery}
-              onChange={(e) => dispatch(setQuery(e.target.value))}
+              value={localQuery}
+              onChange={handleQueryChange}
             />
           </div>
         </div>
@@ -76,11 +97,10 @@ const QueryPanel = () => {
             </label>
             <select
               id="companySize"
+              name="companySize"
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              value={contextParams.companySize}
-              onChange={(e) =>
-                dispatch(setContextParams({ companySize: e.target.value }))
-              }
+              value={localContextParams.companySize || ''}
+              onChange={(e) => handleContextParamChange('companySize', e.target.value)}
             >
               <option value="">Select size</option>
               <option value="small">Small</option>
@@ -96,11 +116,10 @@ const QueryPanel = () => {
             </label>
             <select
               id="industry"
+              name="industry"
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              value={contextParams.industry}
-              onChange={(e) =>
-                dispatch(setContextParams({ industry: e.target.value }))
-              }
+              value={localContextParams.industry || ''}
+              onChange={(e) => handleContextParamChange('industry', e.target.value)}
             >
               <option value="">Select industry</option>
               <option value="technology">Technology</option>
@@ -117,11 +136,10 @@ const QueryPanel = () => {
             </label>
             <select
               id="managementRole"
+              name="managementRole"
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              value={contextParams.managementRole}
-              onChange={(e) =>
-                dispatch(setContextParams({ managementRole: e.target.value }))
-              }
+              value={localContextParams.managementRole || ''}
+              onChange={(e) => handleContextParamChange('managementRole', e.target.value)}
             >
               <option value="">Select role</option>
               <option value="executive">Executive</option>
@@ -135,9 +153,9 @@ const QueryPanel = () => {
         <div>
           <button
             type="submit"
-            disabled={isLoading || !currentQuery.trim()}
+            disabled={isLoading || !localQuery.trim()}
             className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isLoading || !currentQuery.trim()
+              isLoading || !localQuery.trim()
                 ? 'bg-indigo-400 cursor-not-allowed'
                 : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             }`}
@@ -163,8 +181,9 @@ const QueryPanel = () => {
                   key={index}
                   className="p-2 bg-gray-50 rounded-md text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
                   onClick={() => {
+                    setLocalQuery(item.query);
                     dispatch(setQuery(item.query));
-                    // Handle revisiting a query
+                    setIsHistoryOpen(false);
                   }}
                 >
                   <div>{item.query}</div>
