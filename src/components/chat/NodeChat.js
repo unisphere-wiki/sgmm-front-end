@@ -108,11 +108,11 @@ const NodeChat = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
       
       {/* Chat Panel */}
-      <div ref={chatRef} className="fixed inset-y-0 right-0 w-96 bg-white shadow-lg flex flex-col z-50">
+      <div ref={chatRef} className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-lg flex flex-col z-50">
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 truncate max-w-[75%]">
               Chat with {selectedNode?.name}
             </h3>
             <button

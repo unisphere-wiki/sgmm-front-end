@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ForceGraph2D from 'react-force-graph-2d';
 import {
@@ -14,6 +14,7 @@ import { setSelectedNode } from '../../store/slices/nodeSlice';
 const GraphVisualization = () => {
   const dispatch = useDispatch();
   const graphRef = useRef();
+  const [draggedNode, setDraggedNode] = useState(null);
   const {
     nodes,
     links,
@@ -24,6 +25,14 @@ const GraphVisualization = () => {
     center,
     isLoading,
   } = useSelector((state) => state.graph);
+
+  // Define colors for each layer that match the node colors in the graph
+  const layerColors = {
+    0: '#4F46E5', // Indigo for layer 0
+    1: '#059669', // Green for layer 1
+    2: '#B45309', // Amber for layer 2
+    3: '#DC2626'  // Red for layer 3
+  };
 
   // Create a memoized graph data object
   const graphData = useMemo(() => {
@@ -37,27 +46,28 @@ const GraphVisualization = () => {
     const filteredNodes = nodes
       .filter((node) => node.layer <= currentLayer) // Show nodes up to current layer
       .map(node => {
-        console.log('Processing node for graph:', node);
         // Create a new object with only essential properties
         const x = node.x || Math.random() * 800 - 400;
         const y = node.y || Math.random() * 800 - 400;
         
-        return {
-          ...node,
-          // Ensure basic properties are properly typed
-          id: String(node.id),
-          name: String(node.name),
-          val: Number(node.relevance),
-          x,
-          y,
-          // Initialize position properties needed by force-graph
-          fx: null,
-          fy: null,
-          initPos: { x, y }
-        };
+        // Create a fresh object to avoid extensibility issues
+        return Object.create(Object.prototype, {
+          id: { value: String(node.id), writable: true, enumerable: true, configurable: true },
+          name: { value: String(node.name), writable: true, enumerable: true, configurable: true },
+          description: { value: node.description, writable: true, enumerable: true, configurable: true },
+          layer: { value: node.layer, writable: true, enumerable: true, configurable: true },
+          relevance: { value: node.relevance, writable: true, enumerable: true, configurable: true },
+          val: { value: Number(node.relevance || 5), writable: true, enumerable: true, configurable: true },
+          color: { value: layerColors[node.layer] || '#4F46E5', writable: true, enumerable: true, configurable: true },
+          x: { value: x, writable: true, enumerable: true, configurable: true },
+          y: { value: y, writable: true, enumerable: true, configurable: true },
+          fx: { value: null, writable: true, enumerable: true, configurable: true },
+          fy: { value: null, writable: true, enumerable: true, configurable: true },
+          // Additional properties needed
+          graphId: { value: node.graphId, writable: true, enumerable: true, configurable: true },
+          group: { value: node.group || node.layer, writable: true, enumerable: true, configurable: true }
+        });
       });
-
-    console.log('Filtered nodes:', filteredNodes);
 
     // Create a Set of node IDs in the current layer for faster lookup
     const currentLayerNodeIds = new Set(filteredNodes.map(node => node.id));
@@ -73,12 +83,10 @@ const GraphVisualization = () => {
           .map(link => ({
             source: link.source,
             target: link.target,
-            value: Number(link.value),
+            value: Number(link.value || 1),
             color: link.color || '#CBD5E0'
           }))
       : [];
-
-    console.log('Filtered links:', filteredLinks);
 
     return {
       nodes: filteredNodes,
@@ -88,26 +96,45 @@ const GraphVisualization = () => {
 
   // Handle node click
   const handleNodeClick = (node) => {
+    if (!node) return;
+    
     console.log('Node clicked:', node);
-    // Pass the original node data to maintain all properties
-    dispatch(setSelectedNodes([node]));
-    dispatch(setSelectedNode(node));
+    // Clone the node to ensure it's extensible
+    const nodeData = {
+      id: node.id,
+      name: node.name,
+      description: node.description,
+      layer: node.layer,
+      relevance: node.relevance,
+      graphId: node.graphId,
+      color: node.color
+    };
+    
+    dispatch(setSelectedNodes([nodeData]));
+    dispatch(setSelectedNode(nodeData));
+  };
+
+  // Handle node drag start
+  const handleNodeDragStart = (node) => {
+    if (!node) return;
+    // Store a reference to the dragged node
+    setDraggedNode({
+      id: node.id,
+      startX: node.x,
+      startY: node.y
+    });
   };
 
   // Handle node drag end
-  const handleNodeDragEnd = (node, translate) => {
-    if (node) {
-      const updatedNode = {
-        ...node,
-        x: translate.x,
-        y: translate.y
-      };
-      
-      const updatedNodes = nodes.map(n => 
-        n.id === node.id ? { ...n, ...updatedNode } : n
-      );
-      dispatch(setGraphData({ nodes: updatedNodes, links }));
-    }
+  const handleNodeDragEnd = (node) => {
+    if (!node || !draggedNode || draggedNode.id !== node.id) return;
+    
+    const updatedNodes = nodes.map(n => 
+      n.id === node.id ? { ...n, x: node.x, y: node.y } : n
+    );
+    
+    dispatch(setGraphData({ nodes: updatedNodes, links }));
+    setDraggedNode(null);
   };
 
   // Handle zoom
@@ -130,6 +157,39 @@ const GraphVisualization = () => {
     dispatch(toggleConnections());
   };
 
+  // Create animation state for pulsing effect
+  const [pulseScale, setPulseScale] = useState(1);
+  
+  // Pulse animation effect for selected nodes
+  useEffect(() => {
+    let animationFrameId;
+    let scale = 1;
+    let increasing = true;
+    
+    const animate = () => {
+      if (increasing) {
+        scale += 0.015;
+        if (scale >= 1.2) increasing = false;
+      } else {
+        scale -= 0.015;
+        if (scale <= 1) increasing = true;
+      }
+      
+      setPulseScale(scale);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    if (selectedNodes && selectedNodes.length > 0) {
+      animate();
+    }
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [selectedNodes]);
+
   // Set initial zoom when component mounts
   useEffect(() => {
     if (graphRef.current) {
@@ -139,31 +199,45 @@ const GraphVisualization = () => {
   }, []);
 
   return (
-    <div className="relative bg-white lg h-[calc(100vh-200px)]">
+    <div className="relative bg-white h-[calc(100vh-200px)] sm:h-[calc(100vh-240px)] md:h-[calc(100vh-200px)]">
       {/* Layer Controls */}
-      <div className="absolute top-4 left-4 z-10 bg-white p-2">
-        <div className="flex space-x-2">
-          {[0, 1, 2, 3].map((layer) => (
-            <button
-              key={layer}
-              onClick={() => handleLayerChange(layer)}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${
-                currentLayer === layer
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Layer {layer}
-            </button>
-          ))}
+      <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 bg-white p-1 sm:p-2 rounded shadow-sm">
+        <div className="flex flex-wrap gap-1 sm:gap-2">
+          {[0, 1, 2, 3].map((layer) => {
+            // Generate dynamic ring color classes based on layer
+            const ringColorClasses = {
+              0: 'ring-indigo-600',
+              1: 'ring-emerald-600',
+              2: 'ring-amber-600',
+              3: 'ring-red-600'
+            };
+            
+            return (
+              <button
+                key={layer}
+                onClick={() => handleLayerChange(layer)}
+                className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm font-medium flex items-center ${
+                  currentLayer === layer
+                    ? `bg-gray-200 text-gray-900 ring-2 ring-offset-1 ${ringColorClasses[layer]}`
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <div 
+                  className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-1 sm:mr-2 flex-shrink-0"
+                  style={{ backgroundColor: layerColors[layer] }}
+                ></div>
+                <span>L{layer}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Connection Toggle */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10">
         <button
           onClick={handleToggleConnections}
-          className={`px-3 py-1 rounded-md text-sm font-medium ${
+          className={`px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm font-medium ${
             showConnections
               ? 'bg-indigo-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -178,7 +252,6 @@ const GraphVisualization = () => {
         ref={graphRef}
         graphData={graphData}
         nodeLabel="name"
-        nodeAutoColorBy="group"
         nodeRelSize={8}
         linkWidth={1}
         linkColor="#CBD5E0"
@@ -187,25 +260,64 @@ const GraphVisualization = () => {
         linkDirectionalParticleSpeed={0.002}
         linkDirectionalParticleWidth={2}
         linkDirectionalParticleColor="#CBD5E0"
+        onNodeClick={handleNodeClick}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDrag={node => { /* No-op to avoid extensibility error */ }}
+        onNodeDragEnd={handleNodeDragEnd}
+        onZoom={handleZoom}
+        onCenterChange={handleCenterChange}
         nodeCanvasObject={(node, ctx, globalScale) => {
           const label = node.name;
           const fontSize = 12/globalScale;
           ctx.font = `${fontSize}px Sans-Serif`;
-          ctx.fillStyle = node.color;
+          
+          // Check if this node is the selected node
+          const isSelected = selectedNodes && 
+            selectedNodes.length > 0 && 
+            selectedNodes[0].id === node.id;
+          
+          // Calculate node size - make selected node bigger
+          const baseSize = 5;
+          const nodeSize = isSelected ? baseSize * 1.5 : baseSize;
+          
+          // Draw node glow effect for selected node
+          if (isSelected) {
+            // Outer glow with pulsing effect
+            const glowSize = nodeSize + 3 * pulseScale;
+            
+            // Draw outer glow circle
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, glowSize, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(255, 255, 204, 0.6)'; // Light yellow glow
+            ctx.fill();
+            
+            // Draw mid glow circle
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fill();
+            
+            // Draw border
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, nodeSize + 2, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+          
+          // Draw main node circle
           ctx.beginPath();
-          ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI);
+          ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI);
+          ctx.fillStyle = node.color || layerColors[node.layer] || '#4F46E5';
           ctx.fill();
           
-          // Add text label
+          // Add text label - position it slightly lower for selected nodes
+          const labelYOffset = isSelected ? nodeSize + 8 : nodeSize + 5;
           ctx.fillStyle = '#000000';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(label, node.x, node.y + 10);
+          ctx.fillText(label, node.x, node.y + labelYOffset);
         }}
-        onNodeClick={handleNodeClick}
-        onNodeDragEnd={handleNodeDragEnd}
-        onZoom={handleZoom}
-        onCenterChange={handleCenterChange}
         backgroundColor="#ffffff"
         width={window.innerWidth * 0.5}
         height={window.innerHeight - 200}
@@ -236,36 +348,34 @@ const GraphVisualization = () => {
       />
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-4 right-4 z-10 bg-white p-2 rounded-md shadow-md">
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              const currentZoom = graphRef.current?.zoom();
-              graphRef.current?.zoom(currentZoom * 1.2);
-            }}
-            className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-          >
-            +
-          </button>
-          <button
-            onClick={() => {
-              const currentZoom = graphRef.current?.zoom();
-              graphRef.current?.zoom(currentZoom * 0.8);
-            }}
-            className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-          >
-            -
-          </button>
-          <button
-            onClick={() => {
-              graphRef.current?.zoom(1.5); // Reset to closer zoom
-              graphRef.current?.centerAt(0, 0);
-            }}
-            className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-          >
-            Reset
-          </button>
-        </div>
+      <div className="absolute bottom-4 right-4 z-10 bg-white p-2 rounded shadow-sm flex space-x-1">
+        <button
+          onClick={() => {
+            const currentZoom = graphRef.current?.zoom();
+            graphRef.current?.zoom(currentZoom * 1.2);
+          }}
+          className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
+        >
+          +
+        </button>
+        <button
+          onClick={() => {
+            const currentZoom = graphRef.current?.zoom();
+            graphRef.current?.zoom(currentZoom * 0.8);
+          }}
+          className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
+        >
+          -
+        </button>
+        <button
+          onClick={() => {
+            graphRef.current?.zoom(1.5); // Reset to closer zoom
+            graphRef.current?.centerAt(0, 0);
+          }}
+          className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
+        >
+          Reset
+        </button>
       </div>
 
       {/* Loading Overlay */}
