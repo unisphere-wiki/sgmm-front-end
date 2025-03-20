@@ -1,0 +1,116 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Machine Learning",
+      "description": "A field of study that gives computers the ability to learn without being explicitly programmed.",
+      "relevance": 9,
+      "graphId": "graph1",
+      "type": "concept"
+    },
+    {
+      "id": "2",
+      "name": "Neural Networks",
+      "description": "Computing systems inspired by biological neural networks in human brains.",
+      "relevance": 8,
+      "graphId": "graph1",
+      "type": "concept"
+    },
+    {
+      "id": "3",
+      "name": "Deep Learning",
+      "description": "A subset of machine learning based on artificial neural networks with multiple layers.",
+      "relevance": 9,
+      "graphId": "graph1",
+      "type": "concept"
+    },
+    {
+      "id": "4",
+      "name": "Supervised Learning",
+      "description": "A type of machine learning where the model is trained on labeled data.",
+      "relevance": 7,
+      "graphId": "graph1",
+      "type": "concept"
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "target": "2",
+      "type": "related_to",
+      "strength": 0.8
+    },
+    {
+      "source": "2",
+      "target": "3",
+      "type": "related_to",
+      "strength": 0.9
+    },
+    {
+      "source": "1",
+      "target": "4",
+      "type": "related_to",
+      "strength": 0.7
+    }
+  ],
+  "suggestedQuestions": {
+    "1": [
+      "What is the difference between machine learning and traditional programming?",
+      "What are the main types of machine learning?",
+      "How does machine learning work?"
+    ],
+    "2": [
+      "What are the basic components of a neural network?",
+      "How do neural networks learn?",
+      "What are the different types of neural networks?"
+    ],
+    "3": [
+      "What makes deep learning different from traditional neural networks?",
+      "What are the applications of deep learning?",
+      "What are the challenges in deep learning?"
+    ],
+    "4": [
+      "What are the advantages of supervised learning?",
+      "What types of problems can supervised learning solve?",
+      "How do you evaluate a supervised learning model?"
+    ]
+  },
+  "sourceCitations": {
+    "1": [
+      {
+        "text": "Machine learning is the study of computer algorithms that can improve automatically through experience.",
+        "source": "Mitchell, T. (1997). Machine Learning"
+      }
+    ],
+    "2": [
+      {
+        "text": "Neural networks are computing systems inspired by the biological neural networks that constitute animal brains.",
+        "source": "Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning"
+      }
+    ]
+  },
+  "examples": {
+    "1": [
+      {
+        "title": "Email Spam Detection",
+        "description": "Using machine learning to classify emails as spam or not spam.",
+        "learnings": [
+          "Feature extraction from text",
+          "Classification algorithms",
+          "Model evaluation metrics"
+        ]
+      }
+    ],
+    "2": [
+      {
+        "title": "Image Recognition with Neural Networks",
+        "description": "Building a neural network to recognize handwritten digits.",
+        "learnings": [
+          "Neural network architecture",
+          "Training process",
+          "Hyperparameter tuning"
+        ]
+      }
+    ]
+  }
+} 
