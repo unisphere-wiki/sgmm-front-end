@@ -1,4 +1,4 @@
-name: Build & Deploy Node.js App to DigitalOcean Droplet
+name: Deploy Node.js App to DigitalOcean Droplet
 
 on:
   push:
@@ -6,32 +6,63 @@ on:
       - master
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build App
-        run: npm run build
-
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Remove old build from Droplet
+      - name: Connect to Droplet & Deploy
         run: |
-          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }} "rm -rf /root/sgmm-api/bizquery"
+          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }} <<'EOF'
+            APP_DIR=/root/node-app
+            DEPLOY_DIR=/root/sgmm-api
 
-      - name: Deploy build to Droplet
-        run: |
-          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" scp -o StrictHostKeyChecking=no -r build ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }}:/root/sgmm-api/bizquery
+            echo " Preparing deployment..."
+
+            # Backup old package-lock.json for comparison
+            if [ -f "$APP_DIR/package-lock.json" ]; then
+              cp $APP_DIR/package-lock.json /tmp/old-package-lock.json
+            fi
+
+            # Clone or pull the repo
+            if [ -d "$APP_DIR/.git" ]; then
+              cd $APP_DIR
+              git reset --hard
+              git pull origin main
+            else
+              rm -rf $APP_DIR
+              git clone https://github.com/unisphere-wiki/sgmm-front-end.git $APP_DIR
+              cd $APP_DIR
+            fi
+
+            # Compare package-lock.json to decide if npm install is needed
+            cd $APP_DIR
+            NEED_INSTALL=false
+            if [ ! -d node_modules ]; then
+              NEED_INSTALL=true
+            elif ! cmp -s /tmp/old-package-lock.json package-lock.json; then
+              NEED_INSTALL=true
+            fi
+
+            if [ "$NEED_INSTALL" = true ]; then
+              echo "Installing/updating dependencies..."
+              npm install
+            else
+              echo "Using cached node_modules (no changes in lockfile)"
+            fi
+
+            echo "Building app..."
+            npm run build
+
+            echo "Deploying dist to $DEPLOY_DIR/bizquery..."
+            rm -rf $DEPLOY_DIR/bizquery
+            mkdir $DEPLOY_DIR/bizquery
+            cp -r dist $DEPLOY_DIR/bizquery
+
+            echo "Deployment complete."
+          EOF
