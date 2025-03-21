@@ -65,7 +65,7 @@ jobs:
 
             echo "Deployment complete."
 
-            cd $DEPLOY_DIR/..  # wherever your docker-compose.yml is
+            cd $DEPLOY_DIR/  # wherever your docker-compose.yml is
             docker-compose restart nginx
             echo "restarting nginx"
           EOF
