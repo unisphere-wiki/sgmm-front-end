@@ -8,10 +8,22 @@ import GraphVisualization from './components/graph/GraphVisualization';
 import NodeDetailsPanel from './components/node/NodeDetailsPanel';
 import NodeChat from './components/chat/NodeChat';
 import { useSelector } from 'react-redux';
+import QuizModal from './components/quiz/QuizModal';
+import './App.css';
 
 // Wrapper component to access Redux state
 const AppContent = () => {
   const { isOpen: isChatOpen } = useSelector((state) => state.chat);
+
+  // Empty dependency array means this effect runs once on mount
+  useEffect(() => {
+    document.body.classList.add('gradient-bg');
+    
+    // Cleanup function to remove the class when the component unmounts
+    return () => {
+      document.body.classList.remove('gradient-bg');
+    };
+  }, []);
 
   return (
     <MainLayout>
@@ -45,7 +57,10 @@ const AppContent = () => {
       </div>
 
       {/* Node Chat (rendered outside the main layout for proper overlay) */}
-      <NodeChat />
+      {isChatOpen && <NodeChat />}
+      
+      {/* Quiz Modal */}
+      <QuizModal />
     </MainLayout>
   );
 };

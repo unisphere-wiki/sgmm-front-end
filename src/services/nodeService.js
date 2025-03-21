@@ -130,6 +130,34 @@ export const nodeService = {
       throw error.response?.data || error.message;
     }
   },
+  
+  // Get quiz questions for a node
+  getNodeQuiz: async (graphId, nodeId, numQuestions = 5) => {
+    try {
+      // Get current selected document and query from Redux store
+      const store = require('../store').default;
+      const state = store.getState();
+      const selectedDocument = state.query.selectedDocument || { id: '' };
+      const queryHistory = state.query.queryHistory || [];
+      
+      // Get query_id from the most recent history item
+      const queryId = queryHistory.length > 0 ? queryHistory[0].queryId : '';
+      
+      // Prepare the payload
+      const payload = {
+        document_id: selectedDocument.id,
+        graph_id: graphId,
+        node_id: nodeId,
+        num_questions: numQuestions,
+        query_id: queryId
+      };
+      
+      const response = await api.post(`/node-quiz`, payload);
+      return response.data.questions || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default nodeService; 
