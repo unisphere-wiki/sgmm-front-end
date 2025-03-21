@@ -3,7 +3,7 @@ name: Build & Deploy Node.js App to DigitalOcean Droplet
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-deploy:
