@@ -60,9 +60,8 @@ jobs:
             npm run build
 
             echo "Deploying dist to $DEPLOY_DIR/bizquery..."
-            rm -rf $DEPLOY_DIR/bizquery
-            mkdir $DEPLOY_DIR/bizquery
-            cp -r build $DEPLOY_DIR/bizquery
+            rm -rf $DEPLOY_DIR/bizquery/*
+            cp -r build/* $DEPLOY_DIR/bizquery/
 
             echo "Deployment complete."
           EOF
