@@ -33,7 +33,7 @@ jobs:
             if [ -d "$APP_DIR/.git" ]; then
               cd $APP_DIR
               git reset --hard
-              git pull origin main
+              git pull origin master
             else
               rm -rf $APP_DIR
               git clone https://github.com/unisphere-wiki/sgmm-front-end.git $APP_DIR
@@ -62,7 +62,7 @@ jobs:
             echo "Deploying dist to $DEPLOY_DIR/bizquery..."
             rm -rf $DEPLOY_DIR/bizquery
             mkdir $DEPLOY_DIR/bizquery
-            cp -r dist $DEPLOY_DIR/bizquery
+            cp -r build $DEPLOY_DIR/bizquery
 
             echo "Deployment complete."
           EOF
