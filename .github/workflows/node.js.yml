@@ -1,41 +1,37 @@
-name: Deploy Node.js App to DigitalOcean Droplet
+name: Build & Deploy Node.js App to DigitalOcean Droplet
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build App
+        run: npm run build
+
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Connect to Droplet & Deploy
+      - name: Remove old build from Droplet
         run: |
-          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }} <<EOF
-            # Variables
-            APP_DIR=/root/node-app
-            DEPLOY_DIR=/root/sgmm-api
+          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }} "rm -rf /root/sgmm-api/bizquery"
 
-            # Clean up and clone latest
-            rm -rf \$APP_DIR
-            git clone https://github.com/unisphere-wiki/sgmm-front-end.git \$APP_DIR
-
-            cd \$APP_DIR
-
-            # Install and build
-            npm install
-            npm run build
-
-            # Copy dist folder
-            rm -rf \$DEPLOY_DIR/dist
-            cp -r build \$DEPLOY_DIR/bizquery-dist
-
-            echo "Deployment complete."
-          EOF
+      - name: Deploy build to Droplet
+        run: |
+          sshpass -p "${{ secrets.DO_DROPLET_PASSWORD }}" scp -o StrictHostKeyChecking=no -r build ${{ secrets.DO_DROPLET_USER }}@${{ secrets.DO_DROPLET_IP }}:/root/sgmm-api/bizquery
