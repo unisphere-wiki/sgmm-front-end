@@ -295,11 +295,17 @@ const GraphVisualization = () => {
 
       {/* Graph Visualization */}
       <div className="flex-grow relative flex items-center justify-center h-full">
-        {isLoading ? (
+        {/* Loading overlay */}
+        {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
-            <div className="text-indigo-600 text-lg font-medium">Loading graph...</div>
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sgmm-500 mb-3"></div>
+              <div className="text-sgmm-600 text-lg font-medium">Loading graph...</div>
+            </div>
           </div>
-        ) : graphData.nodes.length === 0 ? (
+        )}
+
+        {graphData.nodes.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500">No graph data available</div>
           </div>

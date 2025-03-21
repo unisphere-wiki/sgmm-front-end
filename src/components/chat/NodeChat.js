@@ -131,18 +131,18 @@ const NodeChat = () => {
         style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-200 bg-indigo-50">
+        <div className="px-4 py-3 border-b border-gray-200 bg-sgmm-50">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-900 truncate max-w-[75%] flex items-center">
               <div 
                 className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                style={{ backgroundColor: selectedNode?.color || '#4F46E5' }}
+                style={{ backgroundColor: selectedNode?.color || '#6767c4' }}
               ></div>
               Chat about {selectedNode?.name || selectedNode?.title}
             </h3>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-sgmm-500 focus:ring-offset-2 rounded-full p-1"
               aria-label="Close chat"
             >
               <svg
@@ -166,7 +166,7 @@ const NodeChat = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 text-center space-y-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-sgmm-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
               <p className="px-8">Ask questions about {selectedNode?.name || selectedNode?.title} to learn more about this concept</p>
@@ -182,7 +182,7 @@ const NodeChat = () => {
                 <div
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     message.type === 'user'
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-sgmm-500 text-white'
                       : message.type === 'error'
                       ? 'bg-red-100 text-red-700'
                       : 'bg-white text-gray-900 border border-gray-200 shadow-sm'
@@ -216,7 +216,7 @@ const NodeChat = () => {
                 <button
                   key={index}
                   onClick={() => handleSuggestedQuestionClick(question)}
-                  className="text-left px-3 py-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-full border border-indigo-200 transition-colors"
+                  className="text-left px-3 py-1 text-xs text-sgmm-600 bg-sgmm-50 hover:bg-sgmm-100 rounded-full border border-sgmm-200 transition-colors"
                 >
                   {question}
                 </button>
@@ -234,11 +234,11 @@ const NodeChat = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Ask a question about this concept..."
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pr-10"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-sgmm-500 focus:ring-sgmm-500 sm:text-sm pr-10"
                 disabled={isLoading}
               />
               {isLoading && (
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-500">
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sgmm-500">
                   <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -251,8 +251,8 @@ const NodeChat = () => {
               disabled={isLoading || !inputMessage.trim()}
               className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
                 isLoading || !inputMessage.trim()
-                  ? 'bg-indigo-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  ? 'bg-sgmm-400 cursor-not-allowed'
+                  : 'bg-sgmm-500 hover:bg-sgmm-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sgmm-500'
               }`}
             >
               Send

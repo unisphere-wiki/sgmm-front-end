@@ -112,7 +112,7 @@ body {
 }
 
 .markdown-content a {
-  @apply text-indigo-600 hover:underline;
+  @apply text-sgmm-600 hover:underline;
 }
 
 .markdown-content blockquote {

@@ -247,6 +247,74 @@ const mockNodeService = {
         }
       ]
     };
+  },
+  
+  // Mock quiz function
+  getNodeQuiz: async (graphId, nodeId, numQuestions = 5) => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Generate mock quiz questions based on the node
+    const mockQuestions = [
+      {
+        question: `How does the St. Gallen Management Model approach ${nodeId.replace('node_', 'Concept ')}?`,
+        options: {
+          A: "By focusing solely on financial outcomes",
+          B: "Through a holistic integration of business, environment, and stakeholders",
+          C: "By prioritizing shareholder value above all else",
+          D: "Through a strictly hierarchical management structure"
+        },
+        correct_answer: "B",
+        explanation: "The St. Gallen Management Model takes a holistic approach, considering the integration of business processes, environmental factors, and stakeholder relationships."
+      },
+      {
+        question: `Which of the following is a key principle in ${nodeId.replace('node_', 'Area ')} according to the St. Gallen Model?`,
+        options: {
+          A: "Maximizing short-term profits",
+          B: "Minimizing employee involvement in decision-making",
+          C: "Systematic thinking and interconnected management",
+          D: "Avoiding adaptation to market changes"
+        },
+        correct_answer: "C",
+        explanation: "Systematic thinking and understanding the interconnections between different management areas is a fundamental principle of the St. Gallen Management Model."
+      },
+      {
+        question: "How do successful organizations implement the St. Gallen Model principles in practice?",
+        options: {
+          A: "By ignoring external stakeholders",
+          B: "Through rigid adherence to predefined processes",
+          C: "By avoiding technological innovation",
+          D: "Through adaptive strategies and stakeholder integration"
+        },
+        correct_answer: "D",
+        explanation: "Successful organizations use adaptive strategies and integrate stakeholder perspectives, aligning with the St. Gallen Model's emphasis on system dynamics and relationships."
+      },
+      {
+        question: "What role does organizational culture play in the St. Gallen Management Model?",
+        options: {
+          A: "It is considered irrelevant to business success",
+          B: "It is viewed as a core element that shapes strategy and operations",
+          C: "It is only important for marketing purposes",
+          D: "It is seen as difficult to change and therefore ignored"
+        },
+        correct_answer: "B",
+        explanation: "In the St. Gallen Model, organizational culture is considered a core element that fundamentally shapes strategy, operations, and relationships with stakeholders."
+      },
+      {
+        question: "How does the St. Gallen Model suggest companies should approach innovation?",
+        options: {
+          A: "As an occasional activity during market downturns",
+          B: "As unnecessary in stable industries",
+          C: "As a continuous process integrated into management systems",
+          D: "As a responsibility solely of the R&D department"
+        },
+        correct_answer: "C",
+        explanation: "The St. Gallen Model views innovation as a continuous process that should be integrated into the organization's management systems and culture."
+      }
+    ];
+    
+    // Return only the requested number of questions
+    return mockQuestions.slice(0, numQuestions);
   }
 };
 

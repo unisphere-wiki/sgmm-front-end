@@ -10,8 +10,8 @@ const Header = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold text-indigo-600">
-                St. Gallen Model
+              <Link to="/" className="flex items-center">
+                <img src="/Bizquery.svg" alt="Bizquery Logo" className="h-8 w-auto" />
               </Link>
             </div>
           </div>
@@ -19,7 +19,7 @@ const Header = () => {
           <div className="flex items-center">
             <Menu as="div" className="ml-3 relative">
               <div>
-                <Menu.Button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <Menu.Button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sgmm-500">
                   <span className="sr-only">Open user menu</span>
                   <UserCircleIcon className="h-8 w-8 text-gray-400" />
                 </Menu.Button>
@@ -80,7 +80,7 @@ const Header = () => {
 
             <button
               type="button"
-              className="ml-3 inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="ml-3 inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sgmm-500"
             >
               <span className="sr-only">View notifications</span>
               <Cog6ToothIcon className="h-6 w-6" />
